@@ -16,7 +16,7 @@ parser.add_argument(
 )
 parser.add_argument(
     '-b', '--bootstrap_iterations',
-    help = 'Number of iterations for bootstrapping uncertainties.',
+    help = 'Number of iterations for bootstrapping confidence intervals.',
     type = int,
     default = 0
 )
@@ -664,14 +664,14 @@ for i in range(N_experiment):
     itc_data = numpy.loadtxt(args.itc_data_file[i], unpack = True)
 
     # Size of injections in microliters
-    delta_V.append(itc_data[1])
+    delta_V.append(itc_data[0])
 
     # Convert target enthalpy from cal mol^-1 to kcal mol^-1
-    target_DH.append(itc_data[4] / 1000)
+    target_DH.append(itc_data[1] / 1000)
 
     # Total volume injected after each injection, i.e. cumulative sum of
     # delta_V, divided by the volume of the ITC cell
-    fractional_volume = numpy.cumsum(itc_data[1]) / V0[i]
+    fractional_volume = numpy.cumsum(itc_data[0]) / V0[i]
 
     # Get total concentration of receptor and ligand in cell after each
     # injection in micromolar

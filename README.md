@@ -2,11 +2,11 @@
 Fit ITC data to a model with two interdependent and non-equivalent binding sites.
 
 # Dependencies
-This code requires python3 with numpy and scipy.
+This code requires python3 with the numpy and scipy packages.
 
 # Repository structure
 
-## fit_itc_odel.py
+## fit_itc_model.py
 
 The script used to fit ITC data, described in detail below.
 
@@ -16,5 +16,41 @@ The data and fit parameters for the preQ<sub>1</sub> riboswitches described in t
 
 # Usage
 
-TODO.
+Usage is `fit_itc_model.py [options] itc_data [itc_data_2 ...]` where `itc_data` is a whitespace-delimited text file containing two columns. The first column contains the volume of each injection in $\mu$L, and the second column contains the measured enthalpies in cal mol$^{-1}$.
+
+Options are:
+- `-a` Use the approximate treatment of dilution used in the MicroCal PEAQ software. Implies `-i`.
+- `-b int` Number of bootstrapping iterations to estimate confidence intervals. Default is `0`.
+- `-d float` Width of the prior for the L2 regularization term for $\log K_D$ in units of $k_B T$. Default is `1.0`.
+- `-e float` Width of the prior for the L2 regularization term for $\Delta H$ in units of $k_B T$. Default is `1.0`.
+- `-g str` Name of file conataining an initial guess for the fit parameters. Default for independent sites is to use `1.0` for the nuisance parameter and `0.0` for all other parameters. Default for interdependent sites is to use the result of the fit with independent sites.
+- `-i` Treat binding sites as independent and equivalent.
+- `-l float` Initial concentration of ligand in the syringe in $\mu$M.
+- `-n int` Number of binding sites. Default is `1`.
+- `-p float` Penalty for L2 regularization terms in kcal$^2$ mol$^{-2}$. Default is `0` (i.e. no regularization).
+- `-r float` Initial concentration of receptor in the ITC cell in $\mu$M.
+- `-s int` Number of injections to skip. Skipped injections are included in calculations of volume displaced and heat evolved but are not used to fit parameters. Default is `0`.
+- `-t float` Temperature in K. Only used to set prior widths and report $\Delta G$ values.
+- `-v float` Volume of ITC cell in $\mu$L.
+- `--print_cost` Print the value of the cost function for the initial guess. Useful for cross validation.
+- `--save_bootstrap=str` Name of file to which to writebootstrap samples. Useful for debugging. Default is `None`.
+
+You must give the initial concentrations of ligand and receptor and the volume of the ITC cell using the options `-l`, `-r`, and `-v`.
+
+To perform a global fit of multiple experiments simultaneously, provide additional ITC data files as additional arguments to the script. The options `-l`, `-r`, `-s`, and `-v` can take a comma-separated list to provide different options to each experiment.
+
+# Examples
+
+`fit_itc_model.py -l 100 -r 50 -v 1000 my_itc_data`
+
+Fit ITC data in the file `my_itc_data` using an initial ligand concentration of 100 $\mu$M, an initial receptor concentration of 50 $\mu$M, and an ITC cell volume of 1000 $\mu$L. The parameter estimates and confidence intervals will be reported using the least-squares estimator and the Jacobian of the cost function at the least-squares solution.
+
+`fit_itc_model.py -b 10000 -p 10 -l 100 -r 50 -v 1000 my_itc_data`
+
+Fit ITC data for the same experiment using an L2 regularization penalty of 10 kcal$^2$ mol$^{-2}$. The parameter estimates and confidence intervals will be reported using the median and (2.5, 97.5) percentiles of the bootstrapped distribution.
+
+`fit_itc_model.py -l 100,100,80 -r 50,40,30 -v 1000 -s 1 my_itc_data my_itc_data_2 my_itc_data_3`
+
+Perform a global fit for three experiments. The ligand concentration is 100 $\mu$M in the first experiment, 100 $\mu$M in the second experiment, and 80 $\mu$M in the third experiment. The receptor concentration is 50 $\mu$M in the first experiment, 40 $\mu$M in the second experiment, and 30 $\mu$M in the third experiment. The ITC cell volume is 1000 $\mu$L for all three experiments. The first injection will be skipped in all three experiments.
+
 
